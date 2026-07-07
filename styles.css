@@ -10,7 +10,7 @@
   --ok: #23d18b;
   --err: #ff6a6a;
   --chat-w: 340px;
-  --hud-scale: 0.84;                /* hotkey bar width vs. left column */
+  --hud-scale: 1;                   /* hotkey bar spans full width of left column */
   /* Tile band within the frame image, as fractions of its width/height.
      Used to align the stream window to the hotkeys. */
   --tile-left: 0.15;
