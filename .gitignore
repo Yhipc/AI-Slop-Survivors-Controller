@@ -1,0 +1,7 @@
+# Cloudflare / wrangler
+node_modules/
+.wrangler/
+worker/node_modules/
+worker/.dev.vars
+# misc
+.DS_Store

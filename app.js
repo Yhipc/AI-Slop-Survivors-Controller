@@ -1,100 +1,163 @@
 "use strict";
 
 /* =========================================================================
- * CONFIG — edit these two lines, then everything else works.
+ * CONFIG — edit these, then everything else works.
  * ========================================================================= */
 const CONFIG = {
-  // Paste the Client ID from https://dev.twitch.tv/console  (Register Your Application)
+  // Public Client ID from https://dev.twitch.tv/console (safe to expose).
   CLIENT_ID: "",
 
-  // The channel to embed + send commands into.
+  // Your deployed Cloudflare Worker base URL (no trailing slash).
+  // e.g. "https://q69-twitch-auth.yourname.workers.dev"
+  WORKER_URL: "",
+
+  // Channel to embed + send commands into.
   CHANNEL: "quin69",
 
-  // Implicit-flow scopes. user:write:chat lets the user's token post messages.
+  // Scopes requested from the viewer. Keep minimal — this caps the blast radius.
   SCOPES: "user:write:chat",
 
-  // The command buttons. Edit freely — a "command" is just a chat message.
+  // Command buttons. A "command" is just a chat message. Edit freely.
   COMMANDS: [
-    { label: "Lurk",     text: "!lurk" },
-    { label: "Uptime",   text: "!uptime" },
-    { label: "Socials",  text: "!socials" },
-    { label: "Discord",  text: "!discord" },
-    { label: "+2",       text: "+2" },
-    { label: "-2",       text: "-2" },
+    { label: "Lurk",    text: "!lurk" },
+    { label: "Uptime",  text: "!uptime" },
+    { label: "Socials", text: "!socials" },
+    { label: "Discord", text: "!discord" },
+    { label: "+2",      text: "+2" },
+    { label: "-2",      text: "-2" },
   ],
 
-  // Per-button cooldown so a user can't machine-gun the same string
-  // (Twitch silently drops identical repeats anyway — this is just UX).
+  // Per-button UX cooldown (Twitch drops identical repeats anyway).
   BUTTON_COOLDOWN_MS: 3000,
 };
 
 /* =========================================================================
- * State
+ * State + storage
  * ========================================================================= */
-const state = {
-  token: null,        // user access token
-  me: null,           // { id, login, display_name }
-  broadcasterId: null // quin69's user id
-};
-
-const $ = (sel) => document.querySelector(sel);
+const state = { me: null, broadcasterId: null };
+const $ = (s) => document.querySelector(s);
 const redirectUri = () => location.origin + location.pathname;
 
+const store = {
+  get tokens() {
+    try { return JSON.parse(localStorage.getItem("twitch_tokens")); }
+    catch { return null; }
+  },
+  set tokens(t) {
+    if (t) localStorage.setItem("twitch_tokens", JSON.stringify(t));
+    else localStorage.removeItem("twitch_tokens");
+  },
+};
+
 /* =========================================================================
- * Auth (Implicit grant flow — no backend, no secret)
+ * Auth — Authorization Code flow via the Worker.
+ * The browser only ever holds tokens (in storage), never in the URL.
  * ========================================================================= */
+function randHex(bytes = 16) {
+  const a = new Uint8Array(bytes);
+  crypto.getRandomValues(a);
+  return [...a].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 function login() {
-  if (!CONFIG.CLIENT_ID) {
-    setStatus("Set CONFIG.CLIENT_ID in app.js first (see README).", "err");
+  if (!CONFIG.CLIENT_ID || !CONFIG.WORKER_URL) {
+    setStatus("Set CONFIG.CLIENT_ID and CONFIG.WORKER_URL in app.js first (see README).", "err");
     return;
   }
+  const stateParam = randHex();
+  sessionStorage.setItem("oauth_state", stateParam);
   const params = new URLSearchParams({
     client_id: CONFIG.CLIENT_ID,
     redirect_uri: redirectUri(),
-    response_type: "token",
+    response_type: "code",
     scope: CONFIG.SCOPES,
+    state: stateParam,
   });
   location.href = "https://id.twitch.tv/oauth2/authorize?" + params.toString();
 }
 
 function logout() {
-  sessionStorage.removeItem("twitch_token");
-  state.token = null;
+  store.tokens = null;
   state.me = null;
+  state.broadcasterId = null;
   render();
 }
 
-// Pull an access_token (or error) out of the URL fragment after redirect back.
-function consumeRedirect() {
-  if (!location.hash) return;
-  const frag = new URLSearchParams(location.hash.slice(1));
-  const err = frag.get("error");
-  if (err) {
-    setStatus(`Twitch login failed: ${frag.get("error_description") || err}`, "err");
+// After Twitch redirects back with ?code=&state=, swap the code for tokens.
+async function consumeRedirect() {
+  const q = new URLSearchParams(location.search);
+
+  if (q.get("error")) {
+    setStatus(`Twitch login failed: ${q.get("error_description") || q.get("error")}`, "err");
+    history.replaceState(null, "", redirectUri());
+    return;
   }
-  const token = frag.get("access_token");
-  if (token) {
-    sessionStorage.setItem("twitch_token", token);
-  }
-  // Wipe the fragment so the token isn't left sitting in the address bar / history.
+
+  const code = q.get("code");
+  if (!code) return;
+
+  const expected = sessionStorage.getItem("oauth_state");
+  sessionStorage.removeItem("oauth_state");
+  // Clear the code out of the URL immediately (it's single-use anyway).
   history.replaceState(null, "", redirectUri());
+
+  if (!expected || q.get("state") !== expected) {
+    setStatus("Login blocked: state mismatch (possible CSRF).", "err");
+    return;
+  }
+
+  try {
+    const res = await fetch(CONFIG.WORKER_URL + "/exchange", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, redirect_uri: redirectUri() }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) throw new Error(data.error || "exchange failed");
+    store.tokens = data;
+  } catch (e) {
+    setStatus("Could not complete login: " + e.message, "err");
+  }
+}
+
+async function refreshTokens() {
+  const t = store.tokens;
+  if (!t || !t.refresh_token) return false;
+  try {
+    const res = await fetch(CONFIG.WORKER_URL + "/refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: t.refresh_token }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) return false;
+    store.tokens = data;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /* =========================================================================
  * Twitch Helix API
  * ========================================================================= */
-async function helix(path, opts = {}) {
+async function helix(path, opts = {}, retried = false) {
+  const t = store.tokens;
+  if (!t) throw new Error("not logged in");
+
   const res = await fetch("https://api.twitch.tv/helix/" + path, {
     ...opts,
     headers: {
-      Authorization: "Bearer " + state.token,
+      Authorization: "Bearer " + t.access_token,
       "Client-Id": CONFIG.CLIENT_ID,
       "Content-Type": "application/json",
       ...(opts.headers || {}),
     },
   });
-  if (res.status === 401) {
-    // Token expired or revoked — force a fresh login.
+
+  if (res.status === 401 && !retried) {
+    // Access token expired — refresh once and retry.
+    if (await refreshTokens()) return helix(path, opts, true);
     logout();
     setStatus("Session expired — please log in again.", "err");
     throw new Error("unauthorized");
@@ -103,14 +166,12 @@ async function helix(path, opts = {}) {
 }
 
 async function fetchMe() {
-  const res = await helix("users");
-  const { data } = await res.json();
+  const { data } = await (await helix("users")).json();
   return data && data[0];
 }
 
 async function fetchBroadcasterId() {
-  const res = await helix("users?login=" + encodeURIComponent(CONFIG.CHANNEL));
-  const { data } = await res.json();
+  const { data } = await (await helix("users?login=" + encodeURIComponent(CONFIG.CHANNEL))).json();
   if (!data || !data[0]) throw new Error("channel not found: " + CONFIG.CHANNEL);
   return data[0].id;
 }
@@ -136,7 +197,6 @@ async function sendMessage(text) {
   if (result && result.is_sent) {
     setStatus(`Sent: ${text}`, "ok");
   } else if (result && result.drop_reason) {
-    // e.g. duplicate message, followers-only mode, slow mode, sub-only…
     setStatus(`Dropped (${result.drop_reason.message || result.drop_reason.code})`, "err");
   } else {
     setStatus(`Could not send "${text}" (HTTP ${res.status}).`, "err");
@@ -166,28 +226,25 @@ function buildButtons() {
 }
 
 async function onCommand(button, cmd) {
-  if (!state.token) { setStatus("Log in first.", "err"); return; }
+  if (!store.tokens) { setStatus("Log in first.", "err"); return; }
   button.disabled = true;
   try {
     await sendMessage(cmd.text);
   } catch (_) {
     /* helix() already surfaced the error */
   } finally {
-    // Cooldown regardless of outcome.
     setTimeout(() => { button.disabled = false; }, CONFIG.BUTTON_COOLDOWN_MS);
   }
 }
 
 function loadEmbeds() {
   const parent = location.hostname || "localhost";
-  $("#player").src =
-    `https://player.twitch.tv/?channel=${CONFIG.CHANNEL}&parent=${parent}`;
-  $("#chat").src =
-    `https://www.twitch.tv/embed/${CONFIG.CHANNEL}/chat?parent=${parent}&darkpopout`;
+  $("#player").src = `https://player.twitch.tv/?channel=${CONFIG.CHANNEL}&parent=${parent}`;
+  $("#chat").src = `https://www.twitch.tv/embed/${CONFIG.CHANNEL}/chat?parent=${parent}&darkpopout`;
 }
 
 function render() {
-  const loggedIn = !!state.token;
+  const loggedIn = !!store.tokens;
   $("#loginBtn").hidden = loggedIn;
   $("#logoutBtn").hidden = !loggedIn;
   const who = $("#whoami");
@@ -205,15 +262,13 @@ function render() {
 async function init() {
   buildButtons();
   loadEmbeds();
-  consumeRedirect();
-
   $("#loginBtn").addEventListener("click", login);
   $("#logoutBtn").addEventListener("click", logout);
 
-  state.token = sessionStorage.getItem("twitch_token");
+  await consumeRedirect();
   render();
 
-  if (state.token) {
+  if (store.tokens) {
     try {
       const [me, bid] = await Promise.all([fetchMe(), fetchBroadcasterId()]);
       state.me = me;

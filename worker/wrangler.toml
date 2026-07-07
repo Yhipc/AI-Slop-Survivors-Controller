@@ -1,0 +1,11 @@
+name = "q69-twitch-auth"
+main = "src/worker.js"
+compatibility_date = "2026-01-01"
+
+# Public, non-secret config. Edit these two, then deploy.
+[vars]
+TWITCH_CLIENT_ID = "PASTE_YOUR_CLIENT_ID_HERE"
+ALLOWED_ORIGIN = "https://yhipc.github.io"
+
+# The secret is NOT stored here. Set it once, encrypted, with:
+#   npx wrangler secret put TWITCH_CLIENT_SECRET
