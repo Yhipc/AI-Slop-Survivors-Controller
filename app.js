@@ -228,8 +228,31 @@ function setStatus(msg, kind = "") {
   el.className = "status" + (kind ? " status-" + kind : "");
 }
 
+// Size the stream window so it spans only the tile band of the frame and its
+// bottom sits at the top of the hotkeys (dragons flank it; page bg around it).
+function layoutStream() {
+  const left = document.querySelector(".left");
+  const inner = document.querySelector(".hud-inner");
+  const player = $("#player");
+  if (!left || !inner || !player) return;
+  const fr = inner.getBoundingClientRect();
+  if (!fr.width) return;
+  const lr = left.getBoundingClientRect();
+  const cs = getComputedStyle(document.documentElement);
+  const TL = parseFloat(cs.getPropertyValue("--tile-left")) || 0.15;
+  const TR = parseFloat(cs.getPropertyValue("--tile-right")) || 0.85;
+  const TT = parseFloat(cs.getPropertyValue("--tile-top")) || 0.18;
+  const fx = fr.left - lr.left, fy = fr.top - lr.top;
+  player.style.left = fx + TL * fr.width + "px";
+  player.style.top = "0px";
+  player.style.width = (TR - TL) * fr.width + "px";
+  player.style.height = Math.max(0, fy + TT * fr.height) + "px";
+}
+
 function buildHotspots() {
-  $("#hudFrame").src = CONFIG.FRAME_SRC;
+  const frame = $("#hudFrame");
+  frame.addEventListener("load", layoutStream);
+  frame.src = CONFIG.FRAME_SRC;
   const wrap = $("#hotspots");
   wrap.innerHTML = "";
   for (const cmd of CONFIG.COMMANDS) {
@@ -294,6 +317,11 @@ async function init() {
   loadEmbeds();
   $("#loginBtn").addEventListener("click", login);
   $("#logoutBtn").addEventListener("click", logout);
+
+  // Keep the stream window sized to the tile band on any layout change.
+  layoutStream();
+  window.addEventListener("resize", layoutStream);
+  new ResizeObserver(layoutStream).observe(document.querySelector(".left"));
 
   await consumeRedirect();
   render();

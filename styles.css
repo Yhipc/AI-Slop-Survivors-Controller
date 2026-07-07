@@ -10,7 +10,12 @@
   --ok: #23d18b;
   --err: #ff6a6a;
   --chat-w: 340px;
-  --hud-scale: 0.7;                 /* hotkey bar width vs. player (30% smaller) */
+  --hud-scale: 0.84;                /* hotkey bar width vs. left column */
+  /* Tile band within the frame image, as fractions of its width/height.
+     Used to align the stream window to the hotkeys. */
+  --tile-left: 0.15;
+  --tile-right: 0.85;
+  --tile-top: 0.18;
 }
 
 * { box-sizing: border-box; }
@@ -32,24 +37,21 @@ html, body {
 }
 
 .left {
+  position: relative;               /* positioning context for stream + bar */
   flex: 1 1 auto;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  background: #000;                  /* page background shows beside the stream */
+  overflow: hidden;
 }
-
-.player {
-  position: relative;
-  flex: 1 1 auto;                   /* fills all space above the hotkey bar */
-  min-height: 0;
-  background: #000;
-}
+/* Stream window — its box (left/top/width/height) is set by layoutStream()
+   in app.js so it spans only the tile width and drops to the tiles' top.
+   High z-index keeps the stream (and its controls) above the frame graphics
+   so nothing can ever cover the player controls. */
 #player {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
   border: 0;
+  z-index: 10;
 }
 
 .chat {
@@ -82,7 +84,7 @@ html, body {
 .hud-controls {
   position: absolute;
   top: 10px; left: 10px;
-  z-index: 5;
+  z-index: 20;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -101,18 +103,20 @@ html, body {
 .status-ok { color: var(--ok); }
 .status-err { color: var(--err); }
 
-/* Hotkey bar: docked flush at the bottom of the left column ------------- */
+/* Hotkey bar: docked flush at the bottom, centered --------------------- */
 .hud {
-  flex: 0 0 auto;
-  text-align: center;               /* centers the scaled bar */
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: calc(var(--hud-scale) * 100%);
   line-height: 0;
-  background: #000;
+  z-index: 1;
 }
 .hud-inner {
   position: relative;
-  display: inline-block;
-  width: calc(var(--hud-scale) * 100%);
-  vertical-align: bottom;
+  display: block;
+  width: 100%;
 }
 .hud-frame {
   display: block;
