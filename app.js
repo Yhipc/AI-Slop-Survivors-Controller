@@ -24,23 +24,23 @@ const CONFIG = {
   // they scale with it. Coordinates come from calibrate.html.
   COMMANDS: [
     // top row
-    { text: "!join",             x: 15.0, y: 34, w: 7.0,  h: 13 },
-    { text: "!spawn",            x: 23.0, y: 34, w: 7.0,  h: 13 },
-    { text: "!flee",             x: 30.5, y: 34, w: 7.0,  h: 13 },
-    { text: "!aoe",              x: 38.5, y: 34, w: 7.0,  h: 13 },
-    { text: "!dmg",              x: 46.0, y: 34, w: 7.0,  h: 13 },
-    { text: "!hp",               x: 54.0, y: 34, w: 7.0,  h: 13 },
-    { text: "!speed",            x: 62.0, y: 34, w: 7.0,  h: 13 },
-    { text: "!boost",            x: 69.5, y: 34, w: 7.0,  h: 13 },
-    { text: "!explode",          x: 77.5, y: 34, w: 7.0,  h: 13 },
+    { text: "!join",             x: 15,   y: 21.5, w: 7,    h: 23 },
+    { text: "!spawn",            x: 23,   y: 21.5, w: 7,    h: 23 },
+    { text: "!flee",             x: 30.5, y: 21.5, w: 7,    h: 23 },
+    { text: "!aoe",              x: 38.5, y: 21.5, w: 7,    h: 23 },
+    { text: "!dmg",              x: 46,   y: 21.5, w: 7,    h: 23 },
+    { text: "!hp",               x: 54,   y: 21.5, w: 7,    h: 23 },
+    { text: "!speed",            x: 62,   y: 21.5, w: 7,    h: 23 },
+    { text: "!boost",            x: 69.5, y: 21.5, w: 7,    h: 23 },
+    { text: "!explode",          x: 77.5, y: 21.5, w: 7,    h: 23 },
     // bottom row
-    { text: "!invulnerability",  x: 15.0, y: 49, w: 11.0, h: 16 },
-    { text: "!fart",             x: 26.0, y: 49, w: 8.0,  h: 16 },
-    { text: "!evolveKevin",      x: 34.0, y: 49, w: 11.5, h: 16 },
-    { text: "!thorns",           x: 45.5, y: 49, w: 8.0,  h: 16 },
-    { text: "!evolvesuccubus",   x: 53.5, y: 49, w: 12.5, h: 16 },
-    { text: "!succ",             x: 66.0, y: 49, w: 8.0,  h: 16 },
-    { text: "!evolvewoodlandjoe",x: 74.0, y: 49, w: 11.0, h: 16 },
+    { text: "!invulnerability",  x: 15,   y: 48,   w: 11,   h: 28.3 },
+    { text: "!fart",             x: 26,   y: 48,   w: 8,    h: 28.3 },
+    { text: "!evolveKevin",      x: 34,   y: 48,   w: 11.5, h: 28.3 },
+    { text: "!thorns",           x: 45.5, y: 48,   w: 8,    h: 28.3 },
+    { text: "!evolvesuccubus",   x: 53.5, y: 48,   w: 12.5, h: 28.3 },
+    { text: "!succ",             x: 66,   y: 48,   w: 8,    h: 28.3 },
+    { text: "!evolvewoodlandjoe",x: 74,   y: 48,   w: 11,   h: 28.3 },
   ],
 
   // Per-button UX cooldown (Twitch drops identical repeats anyway).
@@ -294,13 +294,6 @@ async function init() {
   loadEmbeds();
   $("#loginBtn").addEventListener("click", login);
   $("#logoutBtn").addEventListener("click", logout);
-
-  // Collapse / expand the overlay deck (to reach the Twitch player controls).
-  const overlay = $("#overlay");
-  $("#deckToggle").addEventListener("click", () => {
-    const collapsed = overlay.classList.toggle("collapsed");
-    $("#deckToggle").textContent = collapsed ? "▴" : "▾";
-  });
 
   await consumeRedirect();
   render();

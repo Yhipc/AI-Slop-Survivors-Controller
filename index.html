@@ -4,19 +4,20 @@
 <link rel="stylesheet" href="styles.css" />
 
 <div class="stage">
-  <div class="player">
-    <iframe id="player" src="about:blank" allowfullscreen title="Twitch player"></iframe>
-
-    <!-- Hotkey frame overlay, fitted across the bottom of the player -->
-    <div class="overlay" id="overlay">
-      <button id="deckToggle" class="deck-toggle" title="Hide / show hotkeys">▾</button>
+  <div class="left">
+    <div class="player">
+      <iframe id="player" src="about:blank" allowfullscreen title="Twitch player"></iframe>
       <div class="hud-controls">
         <span id="whoami" class="whoami" hidden></span>
         <button id="loginBtn" class="btn btn-primary">Log in with Twitch</button>
         <button id="logoutBtn" class="btn" hidden>Log out</button>
         <span id="status" class="status" role="status" aria-live="polite"></span>
       </div>
-      <div class="hud" id="hud">
+    </div>
+
+    <!-- Hotkey bar, docked flush below the player -->
+    <div class="hud" id="hud">
+      <div class="hud-inner">
         <img id="hudFrame" class="hud-frame" alt="Command frame" />
         <div id="hotspots" class="hud-hotspots"><!-- injected by app.js --></div>
       </div>
