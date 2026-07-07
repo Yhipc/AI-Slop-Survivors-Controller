@@ -250,9 +250,6 @@ function render() {
   const who = $("#whoami");
   who.hidden = !loggedIn;
   who.textContent = state.me ? `@${state.me.display_name || state.me.login}` : "";
-  $("#hint").textContent = loggedIn
-    ? "Click a button to send that command as you."
-    : "Log in to send commands on your own behalf.";
   document.querySelectorAll(".cmd").forEach((b) => (b.disabled = !loggedIn));
 }
 
@@ -264,6 +261,13 @@ async function init() {
   loadEmbeds();
   $("#loginBtn").addEventListener("click", login);
   $("#logoutBtn").addEventListener("click", logout);
+
+  // Collapse / expand the overlay deck (to reach the Twitch player controls).
+  const overlay = $("#overlay");
+  $("#deckToggle").addEventListener("click", () => {
+    const collapsed = overlay.classList.toggle("collapsed");
+    $("#deckToggle").textContent = collapsed ? "▴" : "▾";
+  });
 
   await consumeRedirect();
   render();

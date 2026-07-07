@@ -3,35 +3,30 @@
 <title>Quin69 Command Deck</title>
 <link rel="stylesheet" href="styles.css" />
 
-<header class="topbar">
-  <h1>Quin69 Command Deck</h1>
-  <div id="auth">
-    <span id="whoami" class="whoami" hidden></span>
-    <button id="loginBtn" class="btn btn-primary">Log in with Twitch</button>
-    <button id="logoutBtn" class="btn" hidden>Log out</button>
+<div class="stage">
+  <div class="player">
+    <iframe id="player" src="about:blank" allowfullscreen title="Twitch player"></iframe>
+
+    <!-- Floating command overlay, pinned to the bottom of the player -->
+    <div class="overlay" id="overlay">
+      <button id="deckToggle" class="deck-toggle" title="Hide / show controls">▾</button>
+      <div class="deck-bar">
+        <div class="deck-inner">
+          <div class="deck-left">
+            <span id="whoami" class="whoami" hidden></span>
+            <button id="loginBtn" class="btn btn-primary">Log in with Twitch</button>
+            <button id="logoutBtn" class="btn" hidden>Log out</button>
+          </div>
+          <div id="buttons" class="buttons"><!-- injected by app.js --></div>
+        </div>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </div>
+    </div>
   </div>
-</header>
 
-<main>
-  <section class="stage">
-    <div class="player">
-      <iframe id="player" allowfullscreen
-        src="about:blank"
-        title="Twitch player"></iframe>
-    </div>
-    <div class="chat">
-      <iframe id="chat" src="about:blank" title="Twitch chat"></iframe>
-    </div>
-  </section>
-
-  <section class="deck">
-    <div class="deck-head">
-      <h2>Commands</h2>
-      <p id="hint" class="hint">Log in to send commands on your own behalf.</p>
-    </div>
-    <div id="buttons" class="buttons"><!-- injected by app.js --></div>
-    <div id="status" class="status" role="status" aria-live="polite"></div>
-  </section>
-</main>
+  <div class="chat">
+    <iframe id="chat" src="about:blank" title="Twitch chat"></iframe>
+  </div>
+</div>
 
 <script src="app.js"></script>
