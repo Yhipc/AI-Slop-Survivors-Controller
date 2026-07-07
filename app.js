@@ -5,11 +5,11 @@
  * ========================================================================= */
 const CONFIG = {
   // Public Client ID from https://dev.twitch.tv/console (safe to expose).
-  CLIENT_ID: "",
+  CLIENT_ID: "ismfx1nxhhn4a65mg2zvnv63r88267",
 
   // Your deployed Cloudflare Worker base URL (no trailing slash).
   // e.g. "https://q69-twitch-auth.yourname.workers.dev"
-  WORKER_URL: "",
+  WORKER_URL: "https://q69-twitch-auth.ciphyishere.workers.dev",
 
   // Channel to embed + send commands into.
   CHANNEL: "quin69",

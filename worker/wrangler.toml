@@ -4,7 +4,7 @@ compatibility_date = "2026-01-01"
 
 # Public, non-secret config. Edit these two, then deploy.
 [vars]
-TWITCH_CLIENT_ID = "PASTE_YOUR_CLIENT_ID_HERE"
+TWITCH_CLIENT_ID = "ismfx1nxhhn4a65mg2zvnv63r88267"
 ALLOWED_ORIGIN = "https://yhipc.github.io"
 
 # The secret is NOT stored here. Set it once, encrypted, with:
