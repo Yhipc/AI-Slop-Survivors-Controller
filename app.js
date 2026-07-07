@@ -219,6 +219,7 @@ function buildButtons() {
     const b = document.createElement("button");
     b.className = "btn cmd";
     b.textContent = cmd.label;
+    b.dataset.cmd = cmd.text;
     b.title = cmd.text;
     b.addEventListener("click", () => onCommand(b, cmd));
     wrap.appendChild(b);
@@ -226,7 +227,12 @@ function buildButtons() {
 }
 
 async function onCommand(button, cmd) {
-  if (!store.tokens) { setStatus("Log in first.", "err"); return; }
+  // Not logged in yet? A click starts the Twitch login instead of doing nothing.
+  if (!store.tokens) {
+    setStatus("Opening Twitch login…");
+    login();
+    return;
+  }
   button.disabled = true;
   try {
     await sendMessage(cmd.text);
@@ -250,7 +256,11 @@ function render() {
   const who = $("#whoami");
   who.hidden = !loggedIn;
   who.textContent = state.me ? `@${state.me.display_name || state.me.login}` : "";
-  document.querySelectorAll(".cmd").forEach((b) => (b.disabled = !loggedIn));
+  // Command buttons stay clickable at all times; a click while logged out
+  // triggers login (see onCommand). Just reflect state in a tooltip.
+  document.querySelectorAll(".cmd").forEach((b) => {
+    b.title = loggedIn ? b.dataset.cmd : "Log in to send this command";
+  });
 }
 
 /* =========================================================================
