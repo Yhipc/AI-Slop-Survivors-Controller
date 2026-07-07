@@ -5,3 +5,9 @@ worker/node_modules/
 worker/.dev.vars
 # misc
 .DS_Store
+
+# local dev tool, not deployed
+calibrate.html
+
+# original opaque frame (only used by local calibrate.html)
+Q69ASS-HotkeyFrame.png

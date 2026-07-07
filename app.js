@@ -17,14 +17,30 @@ const CONFIG = {
   // Scopes requested from the viewer. Keep minimal — this caps the blast radius.
   SCOPES: "user:write:chat",
 
-  // Command buttons. A "command" is just a chat message. Edit freely.
+  // The hotkey frame image (transparent PNG), fitted across the player bottom.
+  FRAME_SRC: "Q69ASShotkeys.png",
+
+  // Clickable hotspots over each tile. x/y/w/h are % of the frame image, so
+  // they scale with it. Coordinates come from calibrate.html.
   COMMANDS: [
-    { label: "Lurk",    text: "!lurk" },
-    { label: "Uptime",  text: "!uptime" },
-    { label: "Socials", text: "!socials" },
-    { label: "Discord", text: "!discord" },
-    { label: "+2",      text: "+2" },
-    { label: "-2",      text: "-2" },
+    // top row
+    { text: "!join",             x: 15.0, y: 34, w: 7.0,  h: 13 },
+    { text: "!spawn",            x: 23.0, y: 34, w: 7.0,  h: 13 },
+    { text: "!flee",             x: 30.5, y: 34, w: 7.0,  h: 13 },
+    { text: "!aoe",              x: 38.5, y: 34, w: 7.0,  h: 13 },
+    { text: "!dmg",              x: 46.0, y: 34, w: 7.0,  h: 13 },
+    { text: "!hp",               x: 54.0, y: 34, w: 7.0,  h: 13 },
+    { text: "!speed",            x: 62.0, y: 34, w: 7.0,  h: 13 },
+    { text: "!boost",            x: 69.5, y: 34, w: 7.0,  h: 13 },
+    { text: "!explode",          x: 77.5, y: 34, w: 7.0,  h: 13 },
+    // bottom row
+    { text: "!invulnerability",  x: 15.0, y: 49, w: 11.0, h: 16 },
+    { text: "!fart",             x: 26.0, y: 49, w: 8.0,  h: 16 },
+    { text: "!evolveKevin",      x: 34.0, y: 49, w: 11.5, h: 16 },
+    { text: "!thorns",           x: 45.5, y: 49, w: 8.0,  h: 16 },
+    { text: "!evolvesuccubus",   x: 53.5, y: 49, w: 12.5, h: 16 },
+    { text: "!succ",             x: 66.0, y: 49, w: 8.0,  h: 16 },
+    { text: "!evolvewoodlandjoe",x: 74.0, y: 49, w: 11.0, h: 16 },
   ],
 
   // Per-button UX cooldown (Twitch drops identical repeats anyway).
@@ -212,15 +228,20 @@ function setStatus(msg, kind = "") {
   el.className = "status" + (kind ? " status-" + kind : "");
 }
 
-function buildButtons() {
-  const wrap = $("#buttons");
+function buildHotspots() {
+  $("#hudFrame").src = CONFIG.FRAME_SRC;
+  const wrap = $("#hotspots");
   wrap.innerHTML = "";
   for (const cmd of CONFIG.COMMANDS) {
     const b = document.createElement("button");
-    b.className = "btn cmd";
-    b.textContent = cmd.label;
+    b.className = "hotspot";
     b.dataset.cmd = cmd.text;
     b.title = cmd.text;
+    b.setAttribute("aria-label", cmd.text);
+    b.style.left = cmd.x + "%";
+    b.style.top = cmd.y + "%";
+    b.style.width = cmd.w + "%";
+    b.style.height = cmd.h + "%";
     b.addEventListener("click", () => onCommand(b, cmd));
     wrap.appendChild(b);
   }
@@ -256,10 +277,10 @@ function render() {
   const who = $("#whoami");
   who.hidden = !loggedIn;
   who.textContent = state.me ? `@${state.me.display_name || state.me.login}` : "";
-  // Command buttons stay clickable at all times; a click while logged out
-  // triggers login (see onCommand). Just reflect state in a tooltip.
-  document.querySelectorAll(".cmd").forEach((b) => {
-    b.title = loggedIn ? b.dataset.cmd : "Log in to send this command";
+  // Hotspots stay clickable at all times; a click while logged out triggers
+  // login (see onCommand). Just reflect state in the tooltip.
+  document.querySelectorAll(".hotspot").forEach((b) => {
+    b.title = loggedIn ? b.dataset.cmd : b.dataset.cmd + " — log in to send";
   });
 }
 
@@ -267,7 +288,9 @@ function render() {
  * Boot
  * ========================================================================= */
 async function init() {
-  buildButtons();
+  // ?cal=1 outlines the hotspots so you can eyeball alignment on the frame.
+  if (new URLSearchParams(location.search).has("cal")) document.body.classList.add("cal");
+  buildHotspots();
   loadEmbeds();
   $("#loginBtn").addEventListener("click", login);
   $("#logoutBtn").addEventListener("click", logout);
