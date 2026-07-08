@@ -23,24 +23,24 @@ const CONFIG = {
   // Clickable hotspots over each tile. x/y/w/h are % of the frame image, so
   // they scale with it. Coordinates come from calibrate.html.
   COMMANDS: [
-    // top row
-    { text: "!join",             x: 15,   y: 21.5, w: 7,    h: 23 },
-    { text: "!spawn",            x: 23,   y: 21.5, w: 7,    h: 23 },
-    { text: "!flee",             x: 30.5, y: 21.5, w: 7,    h: 23 },
-    { text: "!aoe",              x: 38.5, y: 21.5, w: 7,    h: 23 },
-    { text: "!dmg",              x: 46,   y: 21.5, w: 7,    h: 23 },
-    { text: "!hp",               x: 54,   y: 21.5, w: 7,    h: 23 },
-    { text: "!speed",            x: 62,   y: 21.5, w: 7,    h: 23 },
-    { text: "!boost",            x: 69.5, y: 21.5, w: 7,    h: 23 },
-    { text: "!explode",          x: 77.5, y: 21.5, w: 7,    h: 23 },
-    // bottom row
-    { text: "!invulnerability",  x: 15,   y: 48,   w: 11,   h: 28.3 },
-    { text: "!fart",             x: 26,   y: 48,   w: 8,    h: 28.3 },
-    { text: "!evolveKevin",      x: 34,   y: 48,   w: 11.5, h: 28.3 },
-    { text: "!thorns",           x: 45.5, y: 48,   w: 8,    h: 28.3 },
-    { text: "!evolvesuccubus",   x: 53.5, y: 48,   w: 12.5, h: 28.3 },
-    { text: "!succ",             x: 66,   y: 48,   w: 8,    h: 28.3 },
-    { text: "!evolvewoodlandjoe",x: 74,   y: 48,   w: 11,   h: 28.3 },
+    // top row (top edge aligned; extended ~8px lower to fully cover the tile)
+    { text: "!join",             x: 15,   y: 21.5, w: 7,    h: 26.3 },
+    { text: "!spawn",            x: 23,   y: 21.5, w: 7,    h: 26.3 },
+    { text: "!flee",             x: 30.5, y: 21.5, w: 7,    h: 26.3 },
+    { text: "!aoe",              x: 38.5, y: 21.5, w: 7,    h: 26.3 },
+    { text: "!dmg",              x: 46,   y: 21.5, w: 7,    h: 26.3 },
+    { text: "!hp",               x: 54,   y: 21.5, w: 7,    h: 26.3 },
+    { text: "!speed",            x: 62,   y: 21.5, w: 7,    h: 26.3 },
+    { text: "!boost",            x: 69.5, y: 21.5, w: 7,    h: 26.3 },
+    { text: "!explode",          x: 77.5, y: 21.5, w: 7,    h: 26.3 },
+    // bottom row (shifted down ~8px, same size)
+    { text: "!invulnerability",  x: 15,   y: 51.3, w: 11,   h: 28.3 },
+    { text: "!fart",             x: 26,   y: 51.3, w: 8,    h: 28.3 },
+    { text: "!evolveKevin",      x: 34,   y: 51.3, w: 11.5, h: 28.3 },
+    { text: "!thorns",           x: 45.5, y: 51.3, w: 8,    h: 28.3 },
+    { text: "!evolvesuccubus",   x: 53.5, y: 51.3, w: 12.5, h: 28.3 },
+    { text: "!succ",             x: 66,   y: 51.3, w: 8,    h: 28.3 },
+    { text: "!evolvewoodlandjoe",x: 74,   y: 51.3, w: 11,   h: 28.3 },
   ],
 
   // Per-tile cooldown lives in styles.css as --cooldown-s (default 30).
@@ -286,26 +286,67 @@ function buildHotspots() {
   }
 }
 
+// Cooldown persistence (local only) — survives a page refresh.
+const CD_KEY = "cooldowns";
+function loadCooldowns() {
+  try { return JSON.parse(localStorage.getItem(CD_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveCooldown(cmd, endTime) {
+  const m = loadCooldowns(); m[cmd] = endTime;
+  localStorage.setItem(CD_KEY, JSON.stringify(m));
+}
+function clearCooldown(cmd) {
+  const m = loadCooldowns(); delete m[cmd];
+  localStorage.setItem(CD_KEY, JSON.stringify(m));
+}
+
 // Put a tile on a radial cooldown: unclickable + sweep + seconds countdown.
-function startCooldown(button) {
-  const secs = parseInt(
+// Pass endTime to resume an in-progress cooldown (e.g. after a refresh).
+function startCooldown(button, endTime) {
+  const full = parseInt(
     getComputedStyle(document.documentElement).getPropertyValue("--cooldown-s")
   ) || 30;
-  button.style.setProperty("--cd-dur", secs + "s");
+  const cmd = button.dataset.cmd;
+  if (!endTime) {
+    endTime = Date.now() + full * 1000;
+    saveCooldown(cmd, endTime);
+  }
+  const remainingMs = endTime - Date.now();
+  if (remainingMs <= 0) { clearCooldown(cmd); return; }
+
+  // Full-length sweep, started partway through via a negative delay.
+  const elapsed = full - remainingMs / 1000;
+  button.style.setProperty("--cd-dur", full + "s");
+  button.style.setProperty("--cd-delay", (-elapsed) + "s");
   button.classList.add("cooling");
   button.disabled = true;
-  let left = secs;
-  button.dataset.cd = left;
+  button.dataset.cd = Math.ceil(remainingMs / 1000);
+
   const iv = setInterval(() => {
-    if (--left <= 0) {
+    const leftMs = endTime - Date.now();
+    if (leftMs <= 0) {
       clearInterval(iv);
       button.classList.remove("cooling");
       button.disabled = false;
+      button.style.removeProperty("--cd-delay");
       delete button.dataset.cd;
+      clearCooldown(cmd);
     } else {
-      button.dataset.cd = left;
+      button.dataset.cd = Math.ceil(leftMs / 1000);
     }
-  }, 1000);
+  }, 250);
+}
+
+// Re-arm any cooldowns still active from before a refresh.
+function restoreCooldowns() {
+  const m = loadCooldowns();
+  const now = Date.now();
+  document.querySelectorAll(".hotspot").forEach((b) => {
+    const end = m[b.dataset.cmd];
+    if (end && end > now) startCooldown(b, end);
+    else if (end) clearCooldown(b.dataset.cmd);
+  });
 }
 
 async function onCommand(button, cmd) {
@@ -351,6 +392,7 @@ async function init() {
   // ?cal=1 outlines the hotspots so you can eyeball alignment on the frame.
   if (params.has("cal")) document.body.classList.add("cal");
   buildHotspots();
+  restoreCooldowns();               // resume cooldowns still active after a refresh
   // ?cddemo previews the cooldown visuals without needing to log in.
   if (params.has("cddemo")) {
     document.querySelectorAll(".hotspot").forEach((b, i) => { if (i % 3 === 0) startCooldown(b); });

@@ -10,7 +10,7 @@
   --ok: #23d18b;
   --err: #ff6a6a;
   --bg-deep: #26032a;               /* lowest-layer page background (RGB 38,3,42) */
-  --chat-w: 340px;
+  --chat-w: 289px;
   --dragon-w: 0.155;                /* poster-border width, as fraction of the bar */
   --row2-top: 0.47;                 /* top of the 2nd hotkey row, fraction of bar height */
   --hud-scale: 1;                   /* hotkey bar spans full width of left column */
@@ -213,6 +213,7 @@ html, body {
   background: conic-gradient(rgba(0, 0, 0, .66) var(--cd-angle), rgba(0, 0, 0, .14) 0deg);
   box-shadow: inset 0 0 0 1px rgba(145, 71, 255, .35);
   animation: cd-sweep var(--cd-dur, 30s) linear forwards;
+  animation-delay: var(--cd-delay, 0s);   /* negative = resume partway (after refresh) */
 }
 .hotspot.cooling::before {          /* seconds remaining, centered */
   content: attr(data-cd);
