@@ -43,8 +43,7 @@ const CONFIG = {
     { text: "!evolvewoodlandjoe",x: 74,   y: 48,   w: 11,   h: 28.3 },
   ],
 
-  // Per-button UX cooldown (Twitch drops identical repeats anyway).
-  BUTTON_COOLDOWN_MS: 3000,
+  // Per-tile cooldown lives in styles.css as --cooldown-s (default 30).
 };
 
 /* =========================================================================
@@ -270,6 +269,28 @@ function buildHotspots() {
   }
 }
 
+// Put a tile on a radial cooldown: unclickable + sweep + seconds countdown.
+function startCooldown(button) {
+  const secs = parseInt(
+    getComputedStyle(document.documentElement).getPropertyValue("--cooldown-s")
+  ) || 30;
+  button.style.setProperty("--cd-dur", secs + "s");
+  button.classList.add("cooling");
+  button.disabled = true;
+  let left = secs;
+  button.dataset.cd = left;
+  const iv = setInterval(() => {
+    if (--left <= 0) {
+      clearInterval(iv);
+      button.classList.remove("cooling");
+      button.disabled = false;
+      delete button.dataset.cd;
+    } else {
+      button.dataset.cd = left;
+    }
+  }, 1000);
+}
+
 async function onCommand(button, cmd) {
   // Not logged in yet? A click starts the Twitch login instead of doing nothing.
   if (!store.tokens) {
@@ -277,13 +298,11 @@ async function onCommand(button, cmd) {
     login();
     return;
   }
-  button.disabled = true;
+  startCooldown(button);            // 30s cooldown begins the moment it's used
   try {
     await sendMessage(cmd.text);
   } catch (_) {
     /* helix() already surfaced the error */
-  } finally {
-    setTimeout(() => { button.disabled = false; }, CONFIG.BUTTON_COOLDOWN_MS);
   }
 }
 
@@ -311,9 +330,14 @@ function render() {
  * Boot
  * ========================================================================= */
 async function init() {
+  const params = new URLSearchParams(location.search);
   // ?cal=1 outlines the hotspots so you can eyeball alignment on the frame.
-  if (new URLSearchParams(location.search).has("cal")) document.body.classList.add("cal");
+  if (params.has("cal")) document.body.classList.add("cal");
   buildHotspots();
+  // ?cddemo previews the cooldown visuals without needing to log in.
+  if (params.has("cddemo")) {
+    document.querySelectorAll(".hotspot").forEach((b, i) => { if (i % 3 === 0) startCooldown(b); });
+  }
   loadEmbeds();
   $("#loginBtn").addEventListener("click", login);
   $("#logoutBtn").addEventListener("click", logout);

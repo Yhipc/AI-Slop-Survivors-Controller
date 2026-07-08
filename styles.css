@@ -16,6 +16,9 @@
   --tile-left: 0.15;
   --tile-right: 0.85;
   --tile-top: 0.18;
+  --hud-drop: 14%;                  /* push bar down so the flat rail nears the
+                                       screen bottom; overhang gets clipped */
+  --cooldown-s: 30;                 /* per-tile cooldown seconds */
 }
 
 * { box-sizing: border-box; }
@@ -108,7 +111,7 @@ html, body {
   position: absolute;
   left: 50%;
   bottom: 0;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(var(--hud-drop));
   width: calc(var(--hud-scale) * 100%);
   line-height: 0;
   z-index: 1;
@@ -141,11 +144,33 @@ html, body {
 }
 .hotspot:active { background: rgba(145, 71, 255, .3); }
 .hotspot:disabled { cursor: default; }
-.hotspot:disabled::after {
+
+/* Cooldown — radial sweep + dim + countdown after a tile is used */
+@property --cd-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 360deg;
+}
+.hotspot.cooling { pointer-events: none; }
+.hotspot.cooling::after {           /* dark wedge that sweeps away as CD ends */
   content: "";
   position: absolute; inset: 0;
   border-radius: 8px;
-  background: rgba(0, 0, 0, .45);
+  background: conic-gradient(rgba(0, 0, 0, .66) var(--cd-angle), rgba(0, 0, 0, .14) 0deg);
+  box-shadow: inset 0 0 0 1px rgba(145, 71, 255, .35);
+  animation: cd-sweep var(--cd-dur, 30s) linear forwards;
+}
+.hotspot.cooling::before {          /* seconds remaining, centered */
+  content: attr(data-cd);
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  font: 800 clamp(13px, 1.5vw, 22px)/1 system-ui, sans-serif;
+  color: #fff;
+  text-shadow: 0 1px 4px #000, 0 0 8px rgba(145, 71, 255, .9);
+}
+@keyframes cd-sweep {
+  from { --cd-angle: 360deg; }
+  to   { --cd-angle: 0deg; }
 }
 
 /* ?cal=1 — visualize hotspot boxes for alignment checks */
