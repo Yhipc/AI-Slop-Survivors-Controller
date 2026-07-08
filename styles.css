@@ -97,6 +97,16 @@ html, body {
   backdrop-filter: blur(4px);
 }
 .whoami { color: #fff; font-weight: 700; text-shadow: 0 1px 3px #000; }
+.help-link {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 12.5px;
+  text-decoration: none;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.help-link:hover { color: var(--text); background: rgba(255, 255, 255, .08); }
 .status {
   min-height: 16px;
   font-size: 12.5px;

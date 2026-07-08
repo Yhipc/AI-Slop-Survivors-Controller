@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ASS2 Controller — Help & FAQ</title>
+<style>
+  :root {
+    --bg: #0e0e10; --panel: #18181b; --panel-2: #1f1f23; --border: #2a2a2e;
+    --text: #efeff1; --muted: #adadb8; --purple: #9147ff; --purple-hi: #a970ff;
+    --ok: #23d18b; --err: #ff6a6a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  a { color: var(--purple-hi); }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 32px 20px 80px; }
+  header { display: flex; align-items: center; justify-content: space-between;
+           gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+  h1 { font-size: 26px; margin: 0; }
+  .sub { color: var(--muted); margin: 4px 0 28px; }
+  .back { font-weight: 600; text-decoration: none; padding: 8px 14px;
+          border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+  .back:hover { background: #2a2a30; }
+  section { background: var(--panel); border: 1px solid var(--border);
+            border-radius: 12px; padding: 22px 24px; margin: 18px 0; }
+  h2 { font-size: 19px; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
+  h2 .ico { font-size: 20px; }
+  h3 { font-size: 15px; margin: 20px 0 4px; color: var(--purple-hi); }
+  p { margin: 8px 0; }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 6px 0; }
+  .lede { color: var(--muted); }
+  .pill { display: inline-block; font: 600 13px monospace; background: #0b0b0d;
+          border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
+  .good { color: var(--ok); } .bad { color: var(--err); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 8px; margin-top: 14px; }
+  .cmd { background: #0b0b0d; border: 1px solid var(--border); border-radius: 8px;
+         padding: 10px 12px; }
+  .cmd code { color: var(--purple-hi); font-weight: 700; font-size: 14px; }
+  .cmd small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .two > div { background: #0b0b0d; border: 1px solid var(--border);
+               border-radius: 10px; padding: 14px 16px; }
+  .two h3 { margin-top: 0; }
+  .cta { text-align: center; }
+  .btn { display: inline-block; margin-top: 10px; padding: 14px 26px; border-radius: 10px;
+         background: var(--purple); color: #fff; font-weight: 700; text-decoration: none;
+         font-size: 16px; }
+  .btn:hover { background: var(--purple-hi); }
+  .note { font-size: 13px; color: var(--muted); }
+  footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 30px; }
+  @media (max-width: 620px) { .two { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>ASS2 Controller — Help &amp; FAQ</h1>
+    <a class="back" href="./">← Back to the controller</a>
+  </header>
+  <p class="sub">A viewer-run control deck for Quin69's <em>AI Slop Survivors</em>. This page explains exactly how it works, what it can and can't do, and how to reach us.</p>
+
+  <!-- SAFETY -->
+  <section id="safety">
+    <h2><span class="ico">🔒</span> Is this safe? How your account is protected</h2>
+    <p class="lede">Short version: you log in on <strong>Twitch's own site</strong>, this app never sees your password, and the only thing it can ever do with your account is send a short list of game commands to chat — which you can revoke in one click.</p>
+
+    <h3>You never give us your password</h3>
+    <p>Login uses Twitch's official <strong>OAuth (Authorization Code) flow</strong>. You're sent to Twitch's real login page; you type your password <em>there</em>, on Twitch's servers. This app never sees, receives, or stores your Twitch password — ever.</p>
+
+    <h3>No secret ever touches your browser</h3>
+    <p>OAuth apps have a "client secret." Ours lives <strong>only on a small server-side function (a Cloudflare Worker)</strong> — never in this web page, never in the code you download, never on your device. The browser does the login handshake; the server holds the secret and does the token exchange privately.</p>
+
+    <h3>No login token is ever put in the URL</h3>
+    <p>Because we use the Authorization Code flow, the only thing that briefly appears in your address bar after login is a <strong>single-use code that is useless to anyone without the server-side secret</strong> (and it expires in seconds). Your actual access token never appears in the URL — safe to use even on stream.</p>
+
+    <h3>What we store — almost nothing</h3>
+    <ul>
+      <li>Your Twitch <strong>access token</strong> is kept in <em>your own browser's</em> local storage so you stay logged in. It never leaves your device except to talk to Twitch.</li>
+      <li>There is <strong class="good">no database</strong>, no server-side account, no analytics, and no tracking. We don't collect your email, name, or any personal data.</li>
+      <li>Log out (or clear your browser data) and the token is gone.</li>
+    </ul>
+
+    <h3>It can only send a fixed list of commands</h3>
+    <p>This app is hard-wired to send <strong>only the specific game commands listed below</strong>. It cannot type arbitrary messages, cannot read your chat or DMs, and cannot act as you anywhere else.</p>
+
+    <h3>Open source — verify it yourself</h3>
+    <p>The entire site is public. Read every line here:
+      <a href="https://github.com/Yhipc/AI-Slop-Survivors-Controller" target="_blank" rel="noopener">github.com/Yhipc/AI-Slop-Survivors-Controller</a>.</p>
+
+    <h3>Revoke access anytime</h3>
+    <p>Go to <span class="pill">Twitch → Settings → Connections</span>, find this app, and click <strong>Disconnect</strong>. That instantly invalidates its access.</p>
+  </section>
+
+  <!-- PERMISSIONS -->
+  <section id="permissions">
+    <h2><span class="ico">🪪</span> What Twitch permission it asks for</h2>
+    <p>When you log in, Twitch shows you a consent screen. This app requests exactly <strong>one</strong> permission (scope):</p>
+    <p><span class="pill">user:write:chat</span> — “Send chat messages to a channel on your behalf.”</p>
+    <p>It also reads your <strong>basic public identity</strong> (your user ID and display name) so it knows who is sending — this needs no special permission beyond being logged in.</p>
+
+    <div class="two">
+      <div>
+        <h3 class="good">✔ What it CAN do</h3>
+        <ul>
+          <li>Send the game commands below to Quin69's chat, as you, when you click a button.</li>
+          <li>See your public username / user ID.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="bad">✘ What it CANNOT do</h3>
+        <ul>
+          <li>See your password or email.</li>
+          <li>Read your chat history, whispers, or DMs.</li>
+          <li>Change account settings, follow/unfollow, moderate, or spend anything.</li>
+          <li>Post anywhere else, or send any message other than the fixed commands.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMANDS -->
+  <section id="commands">
+    <h2><span class="ico">🎮</span> Every command this app can send</h2>
+    <p class="lede">These are the <strong>only</strong> messages this app is capable of sending to Twitch chat. What each one does in-game is decided by <em>AI Slop Survivors</em>, not by this app.</p>
+    <div class="grid">
+      <div class="cmd"><code>!join</code><small>Join the game</small></div>
+      <div class="cmd"><code>!spawn</code><small>Spawn / summon</small></div>
+      <div class="cmd"><code>!flee</code><small>Flee</small></div>
+      <div class="cmd"><code>!aoe</code><small>Area-of-effect</small></div>
+      <div class="cmd"><code>!dmg</code><small>Deal damage</small></div>
+      <div class="cmd"><code>!hp</code><small>Restore health</small></div>
+      <div class="cmd"><code>!speed</code><small>Speed up</small></div>
+      <div class="cmd"><code>!boost</code><small>Boost</small></div>
+      <div class="cmd"><code>!explode</code><small>Explode</small></div>
+      <div class="cmd"><code>!invulnerability</code><small>Invulnerable</small></div>
+      <div class="cmd"><code>!fart</code><small>Fart cloud</small></div>
+      <div class="cmd"><code>!evolveKevin</code><small>Evolve: Kevin</small></div>
+      <div class="cmd"><code>!thorns</code><small>Thorns</small></div>
+      <div class="cmd"><code>!evolvesuccubus</code><small>Evolve: Succubus</small></div>
+      <div class="cmd"><code>!succ</code><small>Succ</small></div>
+      <div class="cmd"><code>!evolvewoodlandjoe</code><small>Evolve: Woodland Joe</small></div>
+    </div>
+    <p class="note">Note: each tile has a 30-second cooldown after use, and Twitch enforces its own per-user rate limits and channel rules (slow mode, followers-only, etc.), which may drop a message independently of this app.</p>
+  </section>
+
+  <!-- FEEDBACK -->
+  <section id="feedback" class="cta">
+    <h2 style="justify-content:center"><span class="ico">✉️</span> Contact the devs &amp; leave feedback</h2>
+    <p>Found a bug, a misaligned button, or have an idea? We'd love to hear it.</p>
+    <a class="btn" href="https://forms.gle/j34L3B4mDeXkwNPP8" target="_blank" rel="noopener">Open the feedback form →</a>
+    <p class="note">Opens a Google Form in a new tab.</p>
+  </section>
+
+  <footer>
+    ASS2 Controller · community-made · not affiliated with Twitch ·
+    <a href="./">Back to the controller</a>
+  </footer>
+</div>
+</html>
