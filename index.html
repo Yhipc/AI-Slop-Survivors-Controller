@@ -4,10 +4,13 @@
 <link rel="stylesheet" href="styles.css" />
 
 <div class="stage">
-  <img class="side side-left" src="leftborderQ69ASS.png" alt="" aria-hidden="true" />
-
   <div class="left">
     <iframe id="player" src="about:blank" allowfullscreen title="Twitch player"></iframe>
+
+    <!-- Side poster borders: above the dragon heads, behind the frame.
+         Positioned by layoutStream() in app.js. -->
+    <img class="side side-left" src="leftborderQ69ASS.png" alt="" aria-hidden="true" />
+    <img class="side side-right" src="rightboarderQ69ASS.png" alt="" aria-hidden="true" />
 
     <!-- Hotkey bar, docked flush at the bottom, centered -->
     <div class="hud" id="hud">
@@ -34,8 +37,6 @@
     </div>
     <iframe id="chat" src="about:blank" title="Twitch chat"></iframe>
   </div>
-
-  <img class="side side-right" src="rightboarderQ69ASS.png" alt="" aria-hidden="true" />
 </div>
 
 <script src="app.js"></script>

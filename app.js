@@ -247,8 +247,22 @@ function layoutStream() {
   player.style.top = "0px";
   player.style.width = (TR - TL) * fr.width + "px";
   player.style.height = streamH + "px";
-  // Poster borders end level with the stream's bottom (not under the bar).
-  document.querySelectorAll(".side").forEach((el) => { el.style.height = streamH + "px"; });
+
+  // Poster borders: above each dragon head (same x), bottom at the 2nd-row top,
+  // tucked behind the frame.
+  const DW = parseFloat(cs.getPropertyValue("--dragon-w")) || 0.155;
+  const R2 = parseFloat(cs.getPropertyValue("--row2-top")) || 0.47;
+  const bw = DW * fr.width;
+  const bh = fy + R2 * fr.height;
+  const setBox = (el, left) => {
+    if (!el) return;
+    el.style.left = left + "px";
+    el.style.top = "0px";
+    el.style.width = bw + "px";
+    el.style.height = Math.max(0, bh) + "px";
+  };
+  setBox(document.querySelector(".side-left"), fx);
+  setBox(document.querySelector(".side-right"), fx + fr.width - bw);
 }
 
 function buildHotspots() {

@@ -11,7 +11,8 @@
   --err: #ff6a6a;
   --bg-deep: #26032a;               /* lowest-layer page background (RGB 38,3,42) */
   --chat-w: 340px;
-  --side-w: 170px;                  /* width of the left/right poster borders */
+  --dragon-w: 0.155;                /* poster-border width, as fraction of the bar */
+  --row2-top: 0.47;                 /* top of the 2nd hotkey row, fraction of bar height */
   --hud-scale: 1;                   /* hotkey bar spans full width of left column */
   /* Tile band within the frame image, as fractions of its width/height.
      Used to align the stream window to the hotkeys. */
@@ -41,20 +42,15 @@ html, body {
   display: flex;
 }
 
-/* Poster borders — side columns, height matched to the stream by layoutStream(),
-   sitting a layer BELOW the content so the hotkey bar is never covered. */
+/* Poster borders — sit above the two dragon heads of the hotkey bar, a layer
+   BEHIND the frame. Their box (left/width/height) is set by layoutStream(). */
 .side {
-  flex: none;
-  width: var(--side-w);
-  min-width: var(--side-w);
-  align-self: flex-start;           /* top-aligned; height set in JS */
-  height: 100%;
+  position: absolute;
+  top: 0;
+  z-index: 0;                       /* behind the hotkey frame (.hud is z-index 1) */
   object-fit: cover;
   object-position: center top;
   display: block;
-  position: relative;
-  z-index: 0;
-  background: var(--bg-deep);
 }
 
 .left {
