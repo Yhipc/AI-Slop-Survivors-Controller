@@ -11,7 +11,7 @@
   --err: #ff6a6a;
   --bg-deep: #26032a;               /* lowest-layer page background (RGB 38,3,42) */
   --chat-w: 329px;
-  --side-zoom: 0.92;                /* poster border zoom (0.92 = show ~8% more) */
+  --side-zoom: 0.95;                /* poster border zoom (0.95 = show ~5% more) */
   --dragon-w: 0.155;                /* poster-border width, as fraction of the bar */
   --row2-top: 0.47;                 /* top of the 2nd hotkey row, fraction of bar height */
   --hud-scale: 1;                   /* hotkey bar spans full width of left column */
