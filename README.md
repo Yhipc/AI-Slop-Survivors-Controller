@@ -6,10 +6,11 @@ A web app that:
 - lets a viewer log in with their **own** Twitch account, and
 - gives them buttons that send chat commands **as themselves**.
 
-> **▶ Live app:** <https://yhipc.github.io/AI-Slop-Survivors-Controller/>
-> **❓ Help / Safety FAQ:** <https://yhipc.github.io/AI-Slop-Survivors-Controller/help.html>
-> — how your account stays safe, the one Twitch permission it uses, and every
-> command it can send. Feedback: <https://forms.gle/j34L3B4mDeXkwNPP8>
+**Quick links**
+
+- ▶ **Live app:** <https://yhipc.github.io/AI-Slop-Survivors-Controller/>
+- ❓ **Help / Safety FAQ:** <https://yhipc.github.io/AI-Slop-Survivors-Controller/help.html> — how your account stays safe, the one Twitch permission it uses, and every command it can send
+- 💬 **Feedback:** <https://forms.gle/j34L3B4mDeXkwNPP8>
 
 **Secure by design:** auth uses Twitch's **Authorization Code flow**. A tiny
 Cloudflare Worker holds the client secret and does the code→token swap, so the
