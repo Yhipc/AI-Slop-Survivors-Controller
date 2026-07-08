@@ -52,6 +52,8 @@ html, body {
   object-position: center top;
   display: block;
 }
+/* Nudge the left poster's crop to the right to reveal its left-side art. */
+.side-left { object-position: calc(50% + 35px) top; }
 
 .left {
   position: relative;               /* positioning context for stream + bar */
