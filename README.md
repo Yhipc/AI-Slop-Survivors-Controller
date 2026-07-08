@@ -1,4 +1,4 @@
-# Quin69 Command Deck
+# AI Slop Survivors 2 Controller
 
 A web app that:
 
