@@ -4,16 +4,10 @@
 <link rel="stylesheet" href="styles.css" />
 
 <div class="stage">
+  <img class="side side-left" src="leftborderQ69ASS.png" alt="" aria-hidden="true" />
+
   <div class="left">
     <iframe id="player" src="about:blank" allowfullscreen title="Twitch player"></iframe>
-
-    <div class="hud-controls">
-      <span id="whoami" class="whoami" hidden></span>
-      <button id="loginBtn" class="btn btn-primary">Log in with Twitch</button>
-      <button id="logoutBtn" class="btn" hidden>Log out</button>
-      <a class="help-link" href="help.html" title="Safety, permissions &amp; commands">FAQ</a>
-      <span id="status" class="status" role="status" aria-live="polite"></span>
-    </div>
 
     <!-- Hotkey bar, docked flush at the bottom, centered -->
     <div class="hud" id="hud">
@@ -25,8 +19,23 @@
   </div>
 
   <div class="chat">
+    <!-- Account + links + status, above the chat window -->
+    <div class="chat-controls">
+      <div class="cc-row">
+        <span id="whoami" class="whoami" hidden></span>
+        <button id="loginBtn" class="gbtn gbtn-primary">Log in with Twitch</button>
+        <button id="logoutBtn" class="gbtn" hidden>Log out</button>
+      </div>
+      <div class="cc-row">
+        <a class="gbtn" href="help.html">FAQ / Help</a>
+        <a class="gbtn gbtn-donate" href="help.html#support">❤ Keep Server Alive</a>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </div>
     <iframe id="chat" src="about:blank" title="Twitch chat"></iframe>
   </div>
+
+  <img class="side side-right" src="rightboarderQ69ASS.png" alt="" aria-hidden="true" />
 </div>
 
 <script src="app.js"></script>

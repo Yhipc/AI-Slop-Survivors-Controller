@@ -9,7 +9,9 @@
   --purple-hi: #a970ff;
   --ok: #23d18b;
   --err: #ff6a6a;
+  --bg-deep: #26032a;               /* lowest-layer page background (RGB 38,3,42) */
   --chat-w: 340px;
+  --side-w: 170px;                  /* width of the left/right poster borders */
   --hud-scale: 1;                   /* hotkey bar spans full width of left column */
   /* Tile band within the frame image, as fractions of its width/height.
      Used to align the stream window to the hotkeys. */
@@ -27,7 +29,7 @@ html, body {
   margin: 0;
   height: 100%;
   overflow: hidden;                 /* theater mode: no page scroll */
-  background: #000;
+  background: var(--bg-deep);
   color: var(--text);
   font: 14px/1.5 "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
@@ -39,11 +41,28 @@ html, body {
   display: flex;
 }
 
+/* Poster borders — side columns, height matched to the stream by layoutStream(),
+   sitting a layer BELOW the content so the hotkey bar is never covered. */
+.side {
+  flex: none;
+  width: var(--side-w);
+  min-width: var(--side-w);
+  align-self: flex-start;           /* top-aligned; height set in JS */
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  position: relative;
+  z-index: 0;
+  background: var(--bg-deep);
+}
+
 .left {
   position: relative;               /* positioning context for stream + bar */
+  z-index: 1;                       /* content sits above the poster borders */
   flex: 1 1 auto;
   min-width: 0;
-  background: #000;                  /* page background shows beside the stream */
+  background: var(--bg-deep);        /* shows beside the stream */
   overflow: hidden;
 }
 /* Stream window — its box (left/top/width/height) is set by layoutStream()
@@ -58,12 +77,16 @@ html, body {
 }
 
 .chat {
+  position: relative;
+  z-index: 1;                       /* above the poster borders */
   flex: 0 0 var(--chat-w);
   height: 100%;
+  display: flex;
+  flex-direction: column;           /* control panel on top, chat below */
   border-left: 1px solid var(--border);
   background: var(--bg);
 }
-#chat { width: 100%; height: 100%; border: 0; display: block; }
+#chat { flex: 1 1 auto; width: 100%; min-height: 0; border: 0; display: block; }
 
 /* Buttons -------------------------------------------------------------- */
 .btn {
@@ -83,35 +106,58 @@ html, body {
 .btn-primary { background: var(--purple); border-color: var(--purple); }
 .btn-primary:hover { background: var(--purple-hi); }
 
-/* Login + status chip, pinned to the player's top-left corner */
-.hud-controls {
-  position: absolute;
-  top: 10px; left: 10px;
-  z-index: 20;
+/* Control panel above the chat window -------------------------------- */
+.chat-controls {
+  flex: 0 0 auto;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, .55);
-  backdrop-filter: blur(4px);
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: linear-gradient(#160c26, #0f0a1c);
+  border-bottom: 1px solid var(--border);
 }
-.whoami { color: #fff; font-weight: 700; text-shadow: 0 1px 3px #000; }
-.help-link {
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 12.5px;
+.cc-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.whoami {
+  color: var(--purple-hi); font-weight: 800; font-size: 13px;
+  padding: 0 4px;
+}
+
+/* Game-style buttons, echoing the hotkey tiles */
+.gbtn {
+  flex: 1 1 auto;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 12px;
+  border: 1px solid #4a2a6a;
+  border-radius: 7px;
+  background: linear-gradient(#221338, #150c26);
+  color: var(--text);
+  font: 800 13px/1 "Inter", system-ui, sans-serif;
+  letter-spacing: .2px;
   text-decoration: none;
-  padding: 4px 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(169, 112, 255, .18), 0 1px 3px rgba(0, 0, 0, .5);
+  transition: border-color .12s, box-shadow .12s, transform .05s;
 }
-.help-link:hover { color: var(--text); background: rgba(255, 255, 255, .08); }
+.gbtn:hover {
+  border-color: var(--purple-hi);
+  box-shadow: inset 0 0 0 1px rgba(169, 112, 255, .35), 0 0 12px rgba(145, 71, 255, .55);
+}
+.gbtn:active { transform: translateY(1px); }
+.gbtn:disabled { opacity: .45; cursor: not-allowed; }
+.gbtn[hidden] { display: none; }   /* [hidden] must beat display:inline-flex */
+.gbtn-primary { background: linear-gradient(var(--purple), #5f28b0); border-color: var(--purple-hi); }
+.gbtn-donate {
+  background: linear-gradient(#3a0f1a, #250a12);
+  border-color: #b0324a;
+  color: #ffd7de;
+}
+.gbtn-donate:hover { border-color: #ff6a8a; box-shadow: 0 0 12px rgba(255, 80, 120, .6); }
+
 .status {
   min-height: 16px;
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--muted);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
 }
 .status-ok { color: var(--ok); }
 .status-err { color: var(--err); }
@@ -192,6 +238,7 @@ html, body {
 /* Narrow screens: stack chat under the left column --------------------- */
 @media (max-width: 820px) {
   .stage { flex-direction: column; }
+  .side { display: none; }          /* no room for posters on narrow screens */
   .left { flex: 1 1 60%; }
   .chat { flex: 0 0 40%; width: 100%; height: auto; border-left: 0; border-top: 1px solid var(--border); }
 }

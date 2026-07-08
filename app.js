@@ -242,10 +242,13 @@ function layoutStream() {
   const TR = parseFloat(cs.getPropertyValue("--tile-right")) || 0.85;
   const TT = parseFloat(cs.getPropertyValue("--tile-top")) || 0.18;
   const fx = fr.left - lr.left, fy = fr.top - lr.top;
+  const streamH = Math.max(0, fy + TT * fr.height);   // stream bottom = tile top
   player.style.left = fx + TL * fr.width + "px";
   player.style.top = "0px";
   player.style.width = (TR - TL) * fr.width + "px";
-  player.style.height = Math.max(0, fy + TT * fr.height) + "px";
+  player.style.height = streamH + "px";
+  // Poster borders end level with the stream's bottom (not under the bar).
+  document.querySelectorAll(".side").forEach((el) => { el.style.height = streamH + "px"; });
 }
 
 function buildHotspots() {
