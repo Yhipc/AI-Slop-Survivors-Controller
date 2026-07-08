@@ -253,16 +253,22 @@ function layoutStream() {
   const DW = parseFloat(cs.getPropertyValue("--dragon-w")) || 0.155;
   const R2 = parseFloat(cs.getPropertyValue("--row2-top")) || 0.47;
   const bw = DW * fr.width;
-  const bh = fy + R2 * fr.height;
-  const setBox = (el, left) => {
+  const bh = Math.max(0, fy + R2 * fr.height);
+  const zoom = parseFloat(cs.getPropertyValue("--side-zoom")) || 0.92;
+  const NAT = { "side-left": [849, 1852], "side-right": [752, 2092] };
+  const setBox = (el, left, key) => {
     if (!el) return;
     el.style.left = left + "px";
     el.style.top = "0px";
     el.style.width = bw + "px";
-    el.style.height = Math.max(0, bh) + "px";
+    el.style.height = bh + "px";
+    // background sized to cover×zoom → zoom<1 reveals more of the poster
+    const [iw, ih] = NAT[key];
+    const s = Math.max(bw / iw, bh / ih) * zoom;
+    el.style.backgroundSize = (iw * s).toFixed(1) + "px " + (ih * s).toFixed(1) + "px";
   };
-  setBox(document.querySelector(".side-left"), fx);
-  setBox(document.querySelector(".side-right"), fx + fr.width - bw);
+  setBox(document.querySelector(".side-left"), fx, "side-left");
+  setBox(document.querySelector(".side-right"), fx + fr.width - bw, "side-right");
 }
 
 function buildHotspots() {

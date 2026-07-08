@@ -10,7 +10,8 @@
   --ok: #23d18b;
   --err: #ff6a6a;
   --bg-deep: #26032a;               /* lowest-layer page background (RGB 38,3,42) */
-  --chat-w: 289px;
+  --chat-w: 329px;
+  --side-zoom: 0.92;                /* poster border zoom (0.92 = show ~8% more) */
   --dragon-w: 0.155;                /* poster-border width, as fraction of the bar */
   --row2-top: 0.47;                 /* top of the 2nd hotkey row, fraction of bar height */
   --hud-scale: 1;                   /* hotkey bar spans full width of left column */
@@ -48,12 +49,11 @@ html, body {
   position: absolute;
   top: 0;
   z-index: 0;                       /* behind the hotkey frame (.hud is z-index 1) */
-  object-fit: cover;
-  object-position: center top;
-  display: block;
+  background-repeat: no-repeat;
+  background-position: center top;   /* background-size set by layoutStream() */
 }
-/* Nudge the left poster's crop to the right to reveal its left-side art. */
-.side-left { object-position: calc(50% + 35px) top; }
+.side-left  { background-image: url("leftborderQ69ASS.png"); background-position: calc(50% + 35px) top; }
+.side-right { background-image: url("rightboarderQ69ASS.png"); }
 
 .left {
   position: relative;               /* positioning context for stream + bar */
