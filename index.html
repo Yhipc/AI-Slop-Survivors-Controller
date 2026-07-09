@@ -34,6 +34,14 @@
         <a class="gbtn" href="help.html">FAQ / Help</a>
         <a class="gbtn gbtn-donate" href="help.html#support">🍔 Support this app</a>
       </div>
+      <div class="cc-streamer">
+        <label class="cc-label" for="channelInput">Connect to streamer chat</label>
+        <div class="cc-streamer-row">
+          <input id="channelInput" class="cc-input" type="text" placeholder="quin69"
+                 spellcheck="false" autocapitalize="none" autocomplete="off" aria-label="Streamer username" />
+          <button id="channelBtn" class="gbtn gbtn-connect">Connect</button>
+        </div>
+      </div>
       <div id="status" class="status" role="status" aria-live="polite"></div>
     </div>
     <iframe id="chat" src="about:blank" title="Twitch chat"></iframe>

@@ -49,7 +49,7 @@ const CONFIG = {
 /* =========================================================================
  * State + storage
  * ========================================================================= */
-const state = { me: null, broadcasterId: null };
+const state = { me: null, broadcasterId: null, channel: null };
 const $ = (s) => document.querySelector(s);
 const redirectUri = () => location.origin + location.pathname;
 
@@ -186,8 +186,8 @@ async function fetchMe() {
 }
 
 async function fetchBroadcasterId() {
-  const { data } = await (await helix("users?login=" + encodeURIComponent(CONFIG.CHANNEL))).json();
-  if (!data || !data[0]) throw new Error("channel not found: " + CONFIG.CHANNEL);
+  const { data } = await (await helix("users?login=" + encodeURIComponent(state.channel))).json();
+  if (!data || !data[0]) throw new Error("channel not found: " + state.channel);
   return data[0].id;
 }
 
@@ -372,8 +372,28 @@ async function onCommand(button, cmd) {
 
 function loadEmbeds() {
   const parent = location.hostname || "localhost";
-  $("#player").src = `https://player.twitch.tv/?channel=${CONFIG.CHANNEL}&parent=${parent}`;
-  $("#chat").src = `https://www.twitch.tv/embed/${CONFIG.CHANNEL}/chat?parent=${parent}&darkpopout`;
+  $("#player").src = `https://player.twitch.tv/?channel=${state.channel}&parent=${parent}`;
+  $("#chat").src = `https://www.twitch.tv/embed/${state.channel}/chat?parent=${parent}&darkpopout`;
+}
+
+// Switch the embedded stream + chat (and command target) to another streamer.
+async function connectChannel(name) {
+  name = (name || "").trim().replace(/^@+/, "").toLowerCase();
+  if (!/^[a-z0-9_]{3,25}$/.test(name)) {
+    setStatus("Enter a valid Twitch username.", "err");
+    return;
+  }
+  state.channel = name;
+  localStorage.setItem("channel", name);
+  const input = $("#channelInput");
+  if (input) input.value = name;
+  loadEmbeds();
+  state.broadcasterId = null;
+  if (store.tokens) {
+    try { state.broadcasterId = await fetchBroadcasterId(); }
+    catch (e) { setStatus("Couldn't find channel: " + name, "err"); return; }
+  }
+  setStatus(`Connected to ${name}'s stream + chat.`, "ok");
 }
 
 function render() {
@@ -403,9 +423,22 @@ async function init() {
   if (params.has("cddemo")) {
     document.querySelectorAll(".hotspot").forEach((b, i) => { if (i % 3 === 0) startCooldown(b); });
   }
+  // Channel: saved choice, else the default. Drives embeds + command target.
+  state.channel = localStorage.getItem("channel") || CONFIG.CHANNEL;
   loadEmbeds();
+
   $("#loginBtn").addEventListener("click", login);
   $("#logoutBtn").addEventListener("click", logout);
+
+  // Connect-to-streamer control.
+  const chInput = $("#channelInput");
+  if (chInput) {
+    chInput.value = state.channel;
+    chInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") connectChannel(chInput.value);
+    });
+  }
+  $("#channelBtn")?.addEventListener("click", () => connectChannel(chInput.value));
 
   // Keep the stream window sized to the tile band on any layout change.
   layoutStream();

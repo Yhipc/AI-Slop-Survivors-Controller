@@ -160,6 +160,31 @@ html, body {
 .status-ok { color: var(--ok); }
 .status-err { color: var(--err); }
 
+/* Connect-to-streamer control */
+.cc-streamer { display: flex; flex-direction: column; gap: 5px; }
+.cc-label {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.cc-streamer-row { display: flex; gap: 8px; }
+.cc-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #4a2a6a;
+  border-radius: 7px;
+  background: #0f0a1c;
+  color: var(--text);
+  font: 700 13px "Inter", system-ui, sans-serif;
+}
+.cc-input:focus {
+  outline: none;
+  border-color: var(--purple-hi);
+  box-shadow: 0 0 0 1px rgba(169, 112, 255, .4);
+}
+.cc-input::placeholder { color: #6b6b7a; }
+.gbtn-connect { flex: 0 0 auto; }
+
 /* Hotkey bar: docked flush at the bottom, centered --------------------- */
 .hud {
   position: absolute;
